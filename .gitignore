@@ -1,0 +1,8 @@
+.vscode/
+.vs/
+.idea/
+publish/
+[Oo]bj/
+[Bb]in/
+dict/
+setting.json
