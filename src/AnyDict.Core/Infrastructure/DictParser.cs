@@ -8,10 +8,17 @@ using System;
 using System.Text;
 using System.IO.Compression;
 
-namespace AnyDict.Core.Implements
+namespace AnyDict.Core.Infrastructure
 {
     public class DictParser : IDictParser
     {
+        private readonly IDictPath _dictPath;
+
+        public List<DictInfo> InfoList { get; protected set; }
+        public DictParser(IDictPath dictPath)
+        {
+            this._dictPath = dictPath;
+        }
         public async Task<DictInfo> GetDictInfo(string dir, string name)
         {
             DictInfo result = await GenerateBaseInfoFromInfoFile(Path.Combine(dir, name) + ".ifo");
@@ -138,6 +145,23 @@ namespace AnyDict.Core.Implements
                 return null;
             }
             return await Task.FromResult(File.ReadAllBytes(dictPath));
+        }
+
+        public async Task LoadInfoList(string homeFolder)
+        {
+            var dir_names = _dictPath.GetAllDictDirAndName(homeFolder);
+            InfoList = new List<DictInfo>();
+            foreach ((string dir, string name) in dir_names)
+            {
+                var info = await GetDictInfo(dir, name);
+                info.DirAndFileName = new Tuple<string, string>(dir, name);
+                InfoList.Add(info);
+                var path = Path.Combine(dir, name) + ".dict";
+                if (File.Exists(path) == false)
+                {
+                    var res = await DecompressDzDict(dir, name);
+                }
+            }
         }
     }
 }

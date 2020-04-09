@@ -1,0 +1,8 @@
+{
+  "CurrentBookName": "21世纪英汉汉英双向词典",
+  "DictionaryHome": "../../dict",
+  "MaxPromptsCount": 30,
+  "MaxHistoryCount": 31,
+  "MaxResultCount": 5,
+  "HistoryFile": "history.txt"
+}

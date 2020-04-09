@@ -10,6 +10,9 @@ namespace AnyDict.ConsoleApp
         public string CurrentBookName { get; set; }
         public string DictionaryHome { get; set; }
         public int MaxPromptsCount { get; set; }
+        public int MaxHistoryCount { get; set; } = 30;
+        public int MaxResultCount { get; set; } = 5;
+        public string HistoryFile { get; set; } = "history.txt";
 
         public static async Task<SettingModel> GetSetting(string file)
         {

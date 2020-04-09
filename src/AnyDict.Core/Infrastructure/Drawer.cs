@@ -1,48 +1,46 @@
-using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using AnyDict.Core.Interfaces;
 using AnyDict.Core.Moldes;
-using Colorful;
+using System.Text.RegularExpressions;
+using System;
+using Console = Colorful.Console;
 
-namespace AnyDict.ConsoleApp
+namespace AnyDict.Core.Infrastructure
 {
-    public class Drawer
+    public class Drawer : IDrawer
     {
-        public void ListAllDictInfo(List<DictInfo> infos)
+        public void ListAllDictInfo(IEnumerable<DictInfo> infos)
         {
             var i = 0;
             foreach (var info in infos)
             {
-                Console.WriteLine($"===={++i}===");
+                Console.WriteLine($"===={++i}===", Color.Yellow);
                 Console.WriteLine("BookName: " + info.BookName);
                 Console.WriteLine("Author: " + info.Author);
                 Console.WriteLine("WordCount: " + info.WordCount);
                 Console.WriteLine("Version: " + info.Version);
                 Console.WriteLine("Date: " + info.Date);
                 Console.WriteLine("Description: " + info.Description);
-                Console.WriteLine("Root path: " + info.DirAndFileName.Item1);
                 Console.WriteLine();
             }
         }
 
-        public void DrawHelp()
-        {
-            Console.WriteLine($@"
--h,--help                       display this help
--l,--list                          list all dict
--c,--choose  [num]         choose [num] dict to use
-");
-        }
-
         public void DrawSearchResult(SearchResult result)
         {
+            if (result == null)
+            {
+                Console.WriteLine(":(  nothing is here.", Color.Gold);
+                return;
+            }
             Console.WriteLine(result.Word, Color.LimeGreen);
             DrawAllData(result.Data);
         }
 
         private void DrawAllData(string data)
         {
-            var ds = data.Split("\n\n");
+            var ds = data.Split(new[] { "\n\n" }, StringSplitOptions.None);
             foreach (var d in ds)
             {
                 DrawData(d);
@@ -51,7 +49,7 @@ namespace AnyDict.ConsoleApp
 
         private void DrawData(string data)
         {
-            var pRegex = new Regex(@" (\d) ");
+            var pRegex = new Regex(@" (\d){1,2} |(\d){1,2} | (\d){1,2}");
             if (pRegex.IsMatch(data))
             {
                 var ps = pRegex.Split(data);
@@ -87,6 +85,55 @@ namespace AnyDict.ConsoleApp
             {
                 Console.WriteLine(line, Color.WhiteSmoke);
             }
+        }
+
+        public void DrawPromptResult(IEnumerable<string> prompts, int minBlankCount = 0)
+        {
+            if (prompts == null) return;
+            var ps = prompts.ToList();
+            var mc = CalMaxColumnCount(ps, minBlankCount);
+
+            var w = Console.WindowWidth / mc;
+
+            for (int i = 0; i < ps.Count; i++)
+            {
+                if (i % mc != mc - 1)
+                {
+                    var format = $"{{0,-{w + minBlankCount}}}";
+                    Console.Write(format, ps[i]);
+                }
+                else
+                {
+                    Console.WriteLine(ps[i]);
+                }
+            }
+
+            if (ps.Count % mc != 0)
+                Console.WriteLine();
+        }
+
+        private int CalMaxColumnCount(IEnumerable<string> prompts, int minBlankCount = 0)
+        {
+            var result = 1;
+            if (prompts == null) return result;
+            var ps = prompts.ToList();
+            var w = Console.WindowWidth;
+            do
+            {
+                var lens = new int[++result];
+                for (int i = 0; i < ps.Count; i++)
+                {
+                    var idx = i % result;
+                    lens[idx] = Math.Max(lens[idx], ps[i].Length + minBlankCount);
+                }
+                if (lens.Sum() > w)
+                {
+                    --result;
+                    break;
+                }
+            }
+            while (true);
+            return Math.Max(1, result);
         }
     }
 }

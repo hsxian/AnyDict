@@ -1,18 +1,18 @@
+using System;
 using System.IO;
 using System.Collections.Generic;
 using AnyDict.Core.Interfaces;
 using System.Linq;
 
-namespace AnyDict.Core.Implements
+namespace AnyDict.Core.Infrastructure
 {
     public class DictPath : IDictPath
     {
-        public string DictStoreDir { get; set; }
-
-        public IEnumerable<(string path, string name)> GetAllDictDirAndName()
+        public IEnumerable<(string path, string name)> GetAllDictDirAndName(string homeFolder)
         {
-            if (string.IsNullOrWhiteSpace(DictStoreDir) || false == Directory.Exists(DictStoreDir)) return null;
-            return Directory.GetDirectories(DictStoreDir)
+            if (string.IsNullOrWhiteSpace(homeFolder)) throw new ArgumentNullException(nameof(homeFolder));
+            if (false == Directory.Exists(homeFolder)) throw new DirectoryNotFoundException($"{nameof(homeFolder)}: {homeFolder} not found.");
+            return Directory.GetDirectories(homeFolder)
                .Where(t =>
                {
                    return Directory.GetFiles(t).Any(tt =>
